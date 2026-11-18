@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Image</title>
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #111;
+    }
+
+    body {
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .image {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      object-position: center;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .glare {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 180ms ease-out;
+      background: radial-gradient(
+        circle 180px at var(--x, 50%) var(--y, 50%),
+        rgba(var(--glare-r, 255), var(--glare-g, 255), var(--glare-b, 255), 0.30),
+        rgba(var(--glare-r, 255), var(--glare-g, 255), var(--glare-b, 255), 0.08) 45%,
+        transparent 72%
+      );
+      mix-blend-mode: screen;
+    }
+
+    body:hover .glare { opacity: 1; }
+  </style>
+</head>
+<body>
+  <img class="image" src="image.jpg" alt="" />
+  <div class="glare" aria-hidden="true"></div>
+
+  <script>
+    const image = document.querySelector('.image');
+    const body = document.body;
+
+    body.addEventListener('pointermove', (event) => {
+      body.style.setProperty('--x', `${event.clientX}px`);
+      body.style.setProperty('--y', `${event.clientY}px`);
+    });
+
+    function setAverageColour() {
+      const canvas = document.createElement('canvas');
+      const size = 64;
+      canvas.width = size;
+      canvas.height = size;
+
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      context.drawImage(image, 0, 0, size, size);
+
+      const pixels = context.getImageData(0, 0, size, size).data;
+      let red = 0, green = 0, blue = 0;
+
+      for (let index = 0; index < pixels.length; index += 4) {
+        red += pixels[index];
+        green += pixels[index + 1];
+        blue += pixels[index + 2];
+      }
+
+      const count = pixels.length / 4;
+      const glare = document.querySelector('.glare');
+      glare.style.setProperty('--glare-r', Math.round(red / count));
+      glare.style.setProperty('--glare-g', Math.round(green / count));
+      glare.style.setProperty('--glare-b', Math.round(blue / count));
+    }
+
+    if (image.complete) setAverageColour();
+    else image.addEventListener('load', setAverageColour, { once: true });
+  </script>
+</body>
+</html>
