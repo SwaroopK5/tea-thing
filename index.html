@@ -18,7 +18,7 @@
       position: relative;
       display: grid;
       place-items: center;
-      touch-action: manipulation;
+      touch-action: auto;
       background-image: url("image.jpg");
       background-size: cover;
       background-position: center;
@@ -37,7 +37,7 @@
       height: 100vh;
       border: 0;
       background: #111;
-      touch-action: manipulation;
+      touch-action: auto;
     }
 
     .image {
@@ -108,17 +108,7 @@
 
     .image,
     .image-blur {
-      transition: transform 180ms ease-out;
-      transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
-      will-change: transform;
-    }
-
-    .image.is-zoomed {
-      transform: scale(var(--zoom-scale, 2.5));
-    }
-
-    .image-blur.is-zoomed {
-      transform: scale(calc(1.08 * var(--zoom-scale, 2.5)));
+      transition: none;
     }
 
     @supports (-webkit-overflow-scrolling: touch) {
@@ -312,64 +302,6 @@
       if (image.naturalWidth > 0) setAverageColour(image);
       else if (image.getAttribute('src')) renderPdf();
     }
-
-    let lastTapTime = 0;
-    let lastTapX = 0;
-    let lastTapY = 0;
-    let suppressMouseDoubleClick = false;
-
-    function toggleImageZoom(x, y) {
-      if (image.classList.contains('is-zoomed')) {
-        image.classList.remove('is-zoomed');
-        imageBlur.classList.remove('is-zoomed');
-        image.style.transform = 'none';
-        imageBlur.style.transform = 'scale(1.08)';
-        image.style.transformOrigin = '50% 50%';
-        imageBlur.style.transformOrigin = '50% 50%';
-        return;
-      }
-
-      image.classList.add('is-zoomed');
-      imageBlur.classList.add('is-zoomed');
-
-      const xPercent = `${Math.max(0, Math.min(100, x / window.innerWidth * 100))}%`;
-      const yPercent = `${Math.max(0, Math.min(100, y / window.innerHeight * 100))}%`;
-
-      image.style.transformOrigin = `${xPercent} ${yPercent}`;
-      imageBlur.style.transformOrigin = `${xPercent} ${yPercent}`;
-      image.style.transform = 'scale(2.5)';
-      imageBlur.style.transform = 'scale(2.7)';
-    }
-
-    body.addEventListener('dblclick', (event) => {
-      if (suppressMouseDoubleClick) return;
-      toggleImageZoom(event.clientX, event.clientY);
-    });
-
-    body.addEventListener('touchstart', (event) => {
-      if (event.touches.length > 1) {
-        lastTapTime = 0;
-      }
-    }, { passive: true });
-
-    body.addEventListener('touchend', (event) => {
-      if (event.changedTouches.length !== 1 || event.touches.length !== 0) return;
-
-      const touch = event.changedTouches[0];
-      const now = Date.now();
-      const distance = Math.hypot(touch.clientX - lastTapX, touch.clientY - lastTapY);
-
-      if (now - lastTapTime < 320 && distance < 40) {
-        suppressMouseDoubleClick = true;
-        window.setTimeout(() => { suppressMouseDoubleClick = false; }, 500);
-        toggleImageZoom(touch.clientX, touch.clientY);
-        lastTapTime = 0;
-      } else {
-        lastTapTime = now;
-        lastTapX = touch.clientX;
-        lastTapY = touch.clientY;
-      }
-    }, { passive: true });
   </script>
 </body>
 </html>
