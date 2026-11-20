@@ -120,6 +120,13 @@
     .image-blur.is-zoomed {
       transform: scale(calc(1.08 * var(--zoom-scale, 2.5)));
     }
+
+    @supports (-webkit-overflow-scrolling: touch) {
+      .image,
+      .image-blur {
+        backface-visibility: hidden;
+      }
+    }
   </style>
 </head>
 <body>
@@ -309,35 +316,49 @@
     let lastTapTime = 0;
     let lastTapX = 0;
     let lastTapY = 0;
+    let suppressMouseDoubleClick = false;
 
     function toggleImageZoom(x, y) {
-      const zoomed = image.classList.toggle('is-zoomed');
+      const zoomed = !image.classList.contains('is-zoomed');
+      image.classList.toggle('is-zoomed', zoomed);
       imageBlur.classList.toggle('is-zoomed', zoomed);
 
       const xPercent = `${Math.max(0, Math.min(100, x / window.innerWidth * 100))}%`;
       const yPercent = `${Math.max(0, Math.min(100, y / window.innerHeight * 100))}%`;
-      image.style.setProperty('--zoom-x', xPercent);
-      image.style.setProperty('--zoom-y', yPercent);
-      imageBlur.style.setProperty('--zoom-x', xPercent);
-      imageBlur.style.setProperty('--zoom-y', yPercent);
 
-      if (!zoomed) {
-        image.style.setProperty('--zoom-scale', '2.5');
+      image.style.transformOrigin = `${xPercent} ${yPercent}`;
+      imageBlur.style.transformOrigin = `${xPercent} ${yPercent}`;
+
+      if (zoomed) {
+        image.style.transform = 'scale(2.5)';
+        imageBlur.style.transform = 'scale(2.7)';
+      } else {
+        image.style.transform = 'none';
+        imageBlur.style.transform = 'scale(1.08)';
       }
     }
 
     body.addEventListener('dblclick', (event) => {
+      if (suppressMouseDoubleClick) return;
       toggleImageZoom(event.clientX, event.clientY);
     });
 
+    body.addEventListener('touchstart', (event) => {
+      if (event.touches.length > 1) {
+        lastTapTime = 0;
+      }
+    }, { passive: true });
+
     body.addEventListener('touchend', (event) => {
-      if (event.changedTouches.length !== 1) return;
+      if (event.changedTouches.length !== 1 || event.touches.length !== 0) return;
 
       const touch = event.changedTouches[0];
       const now = Date.now();
       const distance = Math.hypot(touch.clientX - lastTapX, touch.clientY - lastTapY);
 
       if (now - lastTapTime < 320 && distance < 40) {
+        suppressMouseDoubleClick = true;
+        window.setTimeout(() => { suppressMouseDoubleClick = false; }, 500);
         toggleImageZoom(touch.clientX, touch.clientY);
         lastTapTime = 0;
       } else {
