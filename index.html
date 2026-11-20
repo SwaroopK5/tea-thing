@@ -19,6 +19,14 @@
       display: grid;
       place-items: center;
       touch-action: auto;
+      background-image: url("image.jpg");
+      background-size: cover;
+      background-position: center;
+    }
+
+    body::before {
+      content: "";
+      display: none;
     }
 
     .image,
@@ -36,10 +44,8 @@
       z-index: 1;
       object-fit: contain;
       object-position: center;
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: high-quality;
-      user-select: none;
-      -webkit-user-drag: none;
+      background: transparent;
+      box-shadow: none;
     }
 
     .image-blur {
@@ -52,8 +58,7 @@
       object-position: center;
       filter: blur(28px) brightness(0.72);
       transform: scale(1.08);
-      user-select: none;
-      -webkit-user-drag: none;
+      pointer-events: none;
     }
 
     .glare {
@@ -71,8 +76,6 @@
       mix-blend-mode: screen;
       z-index: 3;
     }
-
-    body:hover .glare { opacity: 1; }
 
     .pdf-blur,
     .pdf-page,
