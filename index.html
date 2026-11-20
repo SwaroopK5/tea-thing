@@ -33,10 +33,25 @@
     }
 
     .image {
+      z-index: 1;
       object-fit: contain;
       object-position: center;
       image-rendering: -webkit-optimize-contrast;
       image-rendering: high-quality;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .image-blur {
+      position: fixed;
+      inset: -32px;
+      z-index: 0;
+      width: calc(100vw + 64px);
+      height: calc(100vh + 64px);
+      object-fit: cover;
+      object-position: center;
+      filter: blur(28px) brightness(0.72);
+      transform: scale(1.08);
       user-select: none;
       -webkit-user-drag: none;
     }
@@ -54,6 +69,7 @@
         transparent 72%
       );
       mix-blend-mode: screen;
+      z-index: 3;
     }
 
     body:hover .glare { opacity: 1; }
@@ -254,6 +270,12 @@
         renderNativePdfFallback();
       }
     }
+
+    const imageBlur = document.createElement('img');
+    imageBlur.className = 'image-blur';
+    imageBlur.alt = '';
+    imageBlur.src = 'image.jpg';
+    body.insertBefore(imageBlur, image);
 
     image.addEventListener('error', renderPdf, { once: true });
     image.addEventListener('load', () => {
